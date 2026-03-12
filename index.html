@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acceso Participantes</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --bg: #f3f4f6;
+            --card-bg: #ffffff;
+            --text: #1f2937;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            width: 100%;
+            max-width: 400px;
+            perspective: 1000px;
+        }
+        /* Estilos de la Tarjeta */
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            overflow: hidden;
+            text-align: center;
+            transition: transform 0.3s ease;
+            position: relative;
+        }
+                .card-header {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            height: 120px;
+            position: relative;
+        }
+        .photo-container {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 4px solid white;
+            margin: -60px auto 10px;
+            background: #eee;
+            overflow: hidden;
+            position: relative;
+        }
+        .photo-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .card-body {
+            padding: 0 20px 30px;
+        }
+        h1 { margin: 0; font-size: 1.5rem; color: #111; }
+        p { margin: 5px 0; color: #666; font-size: 0.9rem; }
+        .badge {
+            display: inline-block;
+            background: #dcfce7;
+            color: #166534;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+                /* Estilos del Formulario */
+        .form-box {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 1rem;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:disabled { background: #ccc; }
+        .hidden { display: none; }
+        .error { color: red; text-align: center; margin-top: 10px; }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 50px auto;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+        <div class="container">
+        <!-- VISTA DE CARGA -->
+        <div id="loading" class="loader hidden"></div>
+
+        <!-- VISTA DE ERROR -->
+        <div id="error-view" class="form-box hidden" style="text-align: center;">
+            <h2 style="color: #dc2626">⚠️ Acceso Denegado</h2>
+            <p id="error-msg">No se encontró registro de esta persona.</p>
+            <button onclick="window.location.href='?'" style="margin-top:20px; background:#333">Volver al Inicio</button>
+        </div>
+
+        <!-- VISTA DE TARJETA (PARTICIPANTE) -->
+        <div id="card-view" class="card hidden">
+            <div class="card-header"></div>
+            <div class="photo-container">
+                <img id="p-photo" src="" alt="Foto">
+            </div>
+            <div class="card-body">
+                <h1 id="p-name">Nombre</h1>
+                <div class="badge">PARTICIPANTE VERIFICADO</div>
+                <p style="margin-top: 15px"><strong>DNI:</strong> <span id="p-dni"></span></p>
+                <p><strong>Email:</strong> <span id="p-email"></span></p>
+                <p><strong>Teléfono:</strong> <span id="p-phone"></span></p>
+            </div>
+        </div>
+
+        <!-- VISTA DE REGISTRO (ADMIN) -->
+        <div id="register-view" class="form-box hidden">
+            <h2 style="text-align: center; margin-top: 0;">Nuevo Registro</h2>
+            <input type="text" id="r-name" placeholder="Nombre Completo" required>
+            <input type="text" id="r-dni" placeholder="DNI / Identificación" required>
+            <input type="email" id="r-email" placeholder="Correo Electrónico">
+            <input type="tel" id="r-phone" placeholder="Número de Teléfono">
+            <input type="url" id="r-photo" placeholder="URL de la Foto (https://...)">
+            <button id="btn-save" onclick="registerParticipant()">Registrar Participante</button>
+            <p id="reg-status" style="text-align: center; margin-top: 10px;"></p>
+            <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
+            <p style="font-size: 0.8rem; text-align: center; color: #888;">
+                ¿Eres visitante? Escanea tu QR para ver tu credencial.
+            </p>
+        </div>
+    </div>
+        <script>
+        // CONFIGURACIÓN: PEGA AQUÍ TU URL DE APPS SCRIPT
+        const API_URL = 'https://script.google.com/macros/s/AKfycbxcIb0Bld8ErMKYlMD7NejK6C9eebO8-8ofu9l5G4Jqx1C9R1huomY8JP7fsf3eJxuq/exec'; 
+
+        const params = new URLSearchParams(window.location.search);
+        const dniParam = params.get('dni');
+        const mode = params.get('mode');
+
+        const loading = document.getElementById('loading');
+        const cardView = document.getElementById('card-view');
+        const errorView = document.getElementById('error-view');
+        const registerView = document.getElementById('register-view');
+
+        // Inicializar
+        if (dniParam) {
+            // Modo Visitante: Verificar identidad
+            loadParticipant(dniParam);
+        } else if (mode === 'register') {
+            // Modo Registro
+            registerView.classList.remove('hidden');
+        } else {
+            // Default: Mostrar formulario de registro (o podrías redirigir)
+            registerView.classList.remove('hidden');
+        }
+                async function loadParticipant(dni) {
+            loading.classList.remove('hidden');
+            try {
+                const response = await fetch(`${API_URL}?action=getParticipant&dni=${encodeURIComponent(dni)}`);
+                const result = await response.json();
+
+                if (result.success && result.data) {
+                    const data = result.data;
+                    document.getElementById('p-name').textContent = data.nombre;
+                    document.getElementById('p-dni').textContent = data.dni;
+                    document.getElementById('p-email').textContent = data.correo;
+                    document.getElementById('p-phone').textContent = data.numero;
+                    
+                    // Manejo de foto por defecto si no hay
+                    const photoSrc = data.foto_url && data.foto_url.trim() !== '' 
+                        ? data.foto_url 
+                        : 'https://ui-avatars.com/api/?name=' + encodeURIComponent(data.nombre) + '&background=random&size=200';
+                    
+                    document.getElementById('p-photo').src = photoSrc;
+
+                    loading.classList.add('hidden');
+                    cardView.classList.remove('hidden');
+                } else {
+                    throw new Error(result.message || 'No registrado');
+                }
+            } catch (error) {
+                loading.classList.add('hidden');
+                errorView.classList.remove('hidden');
+                document.getElementById('error-msg').textContent = "Error: " + error.message;
+            }
+        }
+                async function registerParticipant() {
+            const btn = document.getElementById('btn-save');
+            const status = document.getElementById('reg-status');
+            
+            const data = {
+                nombre: document.getElementById('r-name').value,
+                dni: document.getElementById('r-dni').value,
+                correo: document.getElementById('r-email').value,
+                numero: document.getElementById('r-phone').value,
+                foto_url: document.getElementById('r-photo').value
+            };
+
+            if(!data.nombre || !data.dni) {
+                alert("Nombre y DNI son obligatorios");
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = "Guardando...";
+            status.textContent = "";
+
+            try {
+                // Usamos POST con texto plano para evitar problemas de CORS preflight complejos en Apps Script gratuito
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'addParticipant', ...data })
+                });
+                
+                const result = await response.json();
+
+                if (result.success) {
+                    status.style.color = "green";
+                    status.textContent = "¡Registrado con éxito!";
+                    // Generar enlace QR simulado
+                    const qrLink = window.location.origin + window.location.pathname + '?dni=' + data.dni;
+                    setTimeout(() => {
+                        alert(`Registrado.\nTu enlace personal es:\n${qrLink}\n\nUsa este enlace para generar tu QR.`);
+                        window.location.href = '?dni=' + data.dni;
+                    }, 1000);
+                } else {
+                    throw new Error(result.error);
+                }
+                            } catch (e) {
+                status.style.color = "red";
+                status.textContent = "Error: " + e.message;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "Registrar Participante";
+            }
+        }
+    </script>
+</body>
+</html>
