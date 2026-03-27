@@ -1,267 +1,176 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Acceso Participantes</title>
-    <style>
-        :root {
-            --primary: #2563eb;
-            --bg: #f3f4f6;
-            --card-bg: #ffffff;
-            --text: #1f2937;
-        }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            padding: 20px;
-        }
-        .container {
-            width: 100%;
-            max-width: 400px;
-            perspective: 1000px;
-        }
-        /* Estilos de la Tarjeta */
-        .card {
-            background: var(--card-bg);
-            border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            overflow: hidden;
-            text-align: center;
-            transition: transform 0.3s ease;
-            position: relative;
-        }
-                .card-header {
-            background: linear-gradient(135deg, #2563eb, #1d4ed8);
-            height: 120px;
-            position: relative;
-        }
-        .photo-container {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            border: 4px solid white;
-            margin: -60px auto 10px;
-            background: #eee;
-            overflow: hidden;
-            position: relative;
-        }
-        .photo-container img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        .card-body {
-            padding: 0 20px 30px;
-        }
-        h1 { margin: 0; font-size: 1.5rem; color: #111; }
-        p { margin: 5px 0; color: #666; font-size: 0.9rem; }
-        .badge {
-            display: inline-block;
-            background: #dcfce7;
-            color: #166534;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: bold;
-            margin-top: 10px;
-        }
-                /* Estilos del Formulario */
-        .form-box {
-            background: white;
-            padding: 30px;
-            border-radius: 16px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-        }
-        input {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 15px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            box-sizing: border-box;
-            font-size: 1rem;
-        }
-        button {
-            width: 100%;
-            padding: 12px;
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        button:disabled { background: #ccc; }
-        .hidden { display: none; }
-        .error { color: red; text-align: center; margin-top: 10px; }
-        .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid var(--primary);
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 50px auto;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registro - LiDAR SLAM</title>
+<style>
+    *{box-sizing:border-box;margin:0;padding:0}body{font-family:system-ui,sans-serif;background:linear-gradient(135deg,#1e3a8a,#3b82f6);min-height:100vh;padding:20px;display:flex;align-items:center;justify-content:center}
+    .container{background:white;max-width:480px;width:100%;padding:30px;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+    h1{color:#1e40af;text-align:center;margin-bottom:8px}
+    .subtitle{text-align:center;color:#64748b;margin-bottom:25px;font-size:14px}
+    .form-group{margin-bottom:15px}
+    label{display:block;margin-bottom:6px;font-weight:600;color:#334155;font-size:14px}
+    input{width:100%;padding:12px;border:2px solid #e2e8f0;border-radius:10px;font-size:15px}
+    input:focus{outline:none;border-color:#3b82f6}
+    button{width:100%;padding:14px;background:linear-gradient(135deg,#1e40af,#3b82f6);color:white;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;margin-top:10px}
+    button:disabled{background:#94a3b8;cursor:not-allowed}
+    .hidden{display:none!important}
+    .resultado{background:#f0fdf4;padding:25px;border-radius:12px;margin-top:20px;border:2px solid #22c55e;text-align:center}
+    .resultado code{background:#1e293b;color:#22d3ee;padding:4px 10px;border-radius:6px;font-family:monospace;font-size:11px;display:block;margin:8px 0}
+    .resultado img{max-width:200px;margin:15px 0;border:2px solid #3b82f6;border-radius:8px}
+    .btn{display:inline-block;margin:5px;padding:10px 15px;background:#2563eb;color:white;text-decoration:none;border-radius:8px;font-weight:600}
+    .btn:hover{background:#1d4ed8}
+    .btn-success{background:#16a34a}.btn-success:hover{background:#15803d}
+    .error{background:#fef2f2;color:#dc2626;padding:15px;border-radius:10px;margin-top:15px;border-left:4px solid #dc2626}
+    .info{background:#dbeafe;border-left:4px solid #3b82f6;padding:15px;margin:15px 0 25px;border-radius:0 8px 8px 0;font-size:14px;color:#1e40af}
+    .deploy{background:#fef3c7;border:1px solid #f59e0b;padding:15px;border-radius:8px;margin-top:20px;font-size:13px;color:#92400e}
+    .deploy code{display:block;background:#1e293b;color:#22d3ee;padding:8px;margin:8px 0;border-radius:4px;font-size:11px}
+  </style>
 </head>
 <body>
-        <div class="container">
-        <!-- VISTA DE CARGA -->
-        <div id="loading" class="loader hidden"></div>
+  <div class="container">
+    <h1>🛰️ LiDAR SLAM 2026</h1>
+    <div class="subtitle">Registro de Participantes</div>
+    
+    <div class="info">📝 El QR tendrá la URL de GitHub Pages</div>
+    
+    <form id="registroForm">
+      <div class="form-group">
+        <label>Nombre *</label>
+        <input type="text" name="nombre" required placeholder="Ej: Juan Pérez">
+      </div>
+      <div class="form-group">
+        <label>DNI *</label>
+        <input type="text" name="dni" required placeholder="Ej: 12345678">
+      </div>
+      <div class="form-group">
+        <label>Email *</label>
+        <input type="email" name="email" required placeholder="Ej: juan@email.com">
+      </div>
+      <div class="form-group">
+        <label>Teléfono *</label>
+        <input type="tel" name="telefono" required placeholder="Ej: 999999999">
+      </div>
+      <div class="form-group">
+        <label>Foto *</label>
+        <input type="file" name="foto" accept="image/*" required>
+      </div>
+      <button type="submit" id="btnSubmit">🚀 Generar QR con URL de GitHub</button>
+    </form>
 
-        <!-- VISTA DE ERROR -->
-        <div id="error-view" class="form-box hidden" style="text-align: center;">
-            <h2 style="color: #dc2626">⚠️ Acceso Denegado</h2>
-            <p id="error-msg">No se encontró registro de esta persona.</p>
-            <button onclick="window.location.href='?'" style="margin-top:20px; background:#333">Volver al Inicio</button>
-        </div>
-
-        <!-- VISTA DE TARJETA (PARTICIPANTE) -->
-        <div id="card-view" class="card hidden">
-            <div class="card-header"></div>
-            <div class="photo-container">
-                <img id="p-photo" src="" alt="Foto">
-            </div>
-            <div class="card-body">
-                <h1 id="p-name">Nombre</h1>
-                <div class="badge">PARTICIPANTE VERIFICADO</div>
-                <p style="margin-top: 15px"><strong>DNI:</strong> <span id="p-dni"></span></p>
-                <p><strong>Email:</strong> <span id="p-email"></span></p>
-                <p><strong>Teléfono:</strong> <span id="p-phone"></span></p>
-            </div>
-        </div>
-
-        <!-- VISTA DE REGISTRO (ADMIN) -->
-        <div id="register-view" class="form-box hidden">
-            <h2 style="text-align: center; margin-top: 0;">Nuevo Registro</h2>
-            <input type="text" id="r-name" placeholder="Nombre Completo" required>
-            <input type="text" id="r-dni" placeholder="DNI / Identificación" required>
-            <input type="email" id="r-email" placeholder="Correo Electrónico">
-            <input type="tel" id="r-phone" placeholder="Número de Teléfono">
-            <input type="url" id="r-photo" placeholder="URL de la Foto (https://...)">
-            <button id="btn-save" onclick="registerParticipant()">Registrar Participante</button>
-            <p id="reg-status" style="text-align: center; margin-top: 10px;"></p>
-            <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
-            <p style="font-size: 0.8rem; text-align: center; color: #888;">
-                ¿Eres visitante? Escanea tu QR para ver tu credencial.
-            </p>
-        </div>
+    <div id="resultado" class="resultado hidden">
+      <h2>✅ Credencial Generada</h2>
+      <p><strong>Hash:</strong><code id="resHash"></code></p>
+      <p><strong>Nombre:</strong><span id="resNombre"></span></p>
+      <p style="margin:20px 0 10px;font-weight:600">📱 Código QR</p>
+      <img id="resQR" src="" alt="QR">
+      <p style="font-size:12px;color:#64748b">URL: https://lidar-slam.github.io/LIDAR_SLAM/verificar.html?hash=...</p>
+      
+      <div style="margin-top:15px">
+        <a id="btnQR" href="#" download="qr.png" class="btn btn-success">📥 Descargar QR</a>
+        <a id="btnPDF" href="#" target="_blank" class="btn">📄 Ver PDF</a>
+      </div>
+      
+      <div class="deploy">
+        <strong>🔄 Para publicar en GitHub Pages:</strong>
+        <ol style="margin:10px 0 0 20px;line-height:1.8">
+          <li>Copia a la carpeta <code>/docs</code></li>
+          <li>Ejecuta:<br><code>git add . && git commit -m "Update" && git push</code></li>
+          <li>Espera 1-2 minutos</li>
+        </ol>
+      </div>
+      
+      <button onclick="location.reload()" style="margin-top:15px;background:#64748b">➕ Nuevo</button>
     </div>
-        <script>
-        // CONFIGURACIÓN: PEGA AQUÍ TU URL DE APPS SCRIPT
-        const API_URL = 'https://script.google.com/macros/s/AKfycbxcIb0Bld8ErMKYlMD7NejK6C9eebO8-8ofu9l5G4Jqx1C9R1huomY8JP7fsf3eJxuq/exec'; 
 
-        const params = new URLSearchParams(window.location.search);
-        const dniParam = params.get('dni');
-        const mode = params.get('mode');
+    <div id="error" class="error hidden"></div>
+  </div>
 
-        const loading = document.getElementById('loading');
-        const cardView = document.getElementById('card-view');
-        const errorView = document.getElementById('error-view');
-        const registerView = document.getElementById('register-view');
-
-        // Inicializar
-        if (dniParam) {
-            // Modo Visitante: Verificar identidad
-            loadParticipant(dniParam);
-        } else if (mode === 'register') {
-            // Modo Registro
-            registerView.classList.remove('hidden');
-        } else {
-            // Default: Mostrar formulario de registro (o podrías redirigir)
-            registerView.classList.remove('hidden');
+  <script>
+    document.getElementById('registroForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const btn = document.getElementById('btnSubmit');
+      const resultado = document.getElementById('resultado');
+      const error = document.getElementById('error');
+      
+      btn.disabled = true;
+      btn.textContent = '⏳ Generando...';
+      error.classList.add('hidden');
+      
+      const formData = new FormData(e.target);
+      
+      // DEBUG: Mostrar datos que se envían
+      console.log('📤 Enviando formulario...');
+      for (let [key, value] of formData.entries()) {
+        console.log(`  ${key}:`, value instanceof File ? value.name : value);
+      }
+      
+      try {
+        const response = await fetch('/api/registrar', {
+          method: 'POST',
+          body: formData
+        });
+        
+        console.log('📥 Status:', response.status);
+        console.log('📥 Headers:', response.headers.get('content-type'));
+        
+        // Leer respuesta como texto primero
+        const responseText = await response.text();
+        console.log('📥 Raw response:', responseText);
+        
+        // Parsear JSON
+        let result;
+        try {
+          result = JSON.parse(responseText);
+        } catch (parseError) {
+          console.error('❌ No es JSON:', parseError);
+          throw new Error('El servidor no devolvió JSON válido. Revisa la consola (F12).');
         }
-                async function loadParticipant(dni) {
-            loading.classList.remove('hidden');
-            try {
-                const response = await fetch(`${API_URL}?action=getParticipant&dni=${encodeURIComponent(dni)}`);
-                const result = await response.json();
-
-                if (result.success && result.data) {
-                    const data = result.data;
-                    document.getElementById('p-name').textContent = data.nombre;
-                    document.getElementById('p-dni').textContent = data.dni;
-                    document.getElementById('p-email').textContent = data.correo;
-                    document.getElementById('p-phone').textContent = data.numero;
-                    
-                    // Manejo de foto por defecto si no hay
-                    const photoSrc = data.foto_url && data.foto_url.trim() !== '' 
-                        ? data.foto_url 
-                        : 'https://ui-avatars.com/api/?name=' + encodeURIComponent(data.nombre) + '&background=random&size=200';
-                    
-                    document.getElementById('p-photo').src = photoSrc;
-
-                    loading.classList.add('hidden');
-                    cardView.classList.remove('hidden');
-                } else {
-                    throw new Error(result.message || 'No registrado');
-                }
-            } catch (error) {
-                loading.classList.add('hidden');
-                errorView.classList.remove('hidden');
-                document.getElementById('error-msg').textContent = "Error: " + error.message;
-            }
+        
+        console.log('📥 Resultado parseado:', result);
+        
+        // VERIFICAR ESTRUCTURA DE RESPUESTA
+        if (!result) {
+          throw new Error('Respuesta vacía del servidor');
         }
-                async function registerParticipant() {
-            const btn = document.getElementById('btn-save');
-            const status = document.getElementById('reg-status');
-            
-            const data = {
-                nombre: document.getElementById('r-name').value,
-                dni: document.getElementById('r-dni').value,
-                correo: document.getElementById('r-email').value,
-                numero: document.getElementById('r-phone').value,
-                foto_url: document.getElementById('r-photo').value
-            };
-
-            if(!data.nombre || !data.dni) {
-                alert("Nombre y DNI son obligatorios");
-                return;
-            }
-
-            btn.disabled = true;
-            btn.textContent = "Guardando...";
-            status.textContent = "";
-
-            try {
-                // Usamos POST con texto plano para evitar problemas de CORS preflight complejos en Apps Script gratuito
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ action: 'addParticipant', ...data })
-                });
-                
-                const result = await response.json();
-
-                if (result.success) {
-                    status.style.color = "green";
-                    status.textContent = "¡Registrado con éxito!";
-                    // Generar enlace QR simulado
-                    const qrLink = window.location.origin + window.location.pathname + '?dni=' + data.dni;
-                    setTimeout(() => {
-                        alert(`Registrado.\nTu enlace personal es:\n${qrLink}\n\nUsa este enlace para generar tu QR.`);
-                        window.location.href = '?dni=' + data.dni;
-                    }, 1000);
-                } else {
-                    throw new Error(result.error);
-                }
-                            } catch (e) {
-                status.style.color = "red";
-                status.textContent = "Error: " + e.message;
-            } finally {
-                btn.disabled = false;
-                btn.textContent = "Registrar Participante";
-            }
+        
+        if (!result.success) {
+          throw new Error(result.error || 'Error del servidor');
         }
-    </script>
+        
+        if (!result.data) {
+          throw new Error('No hay datos en la respuesta (result.data es undefined)');
+        }
+        
+        if (!result.data.hash) {
+          throw new Error('No hay hash en result.data: ' + JSON.stringify(result.data));
+        }
+        
+        // ✅ TODO CORRECTO - MOSTRAR RESULTADO
+        const d = result.data;
+        document.getElementById('registroForm').classList.add('hidden');
+        resultado.classList.remove('hidden');
+        
+        document.getElementById('resHash').textContent = d.hash;
+        document.getElementById('resNombre').textContent = d.nombre;
+        document.getElementById('resQR').src = d.qr + '?t=' + Date.now();
+        document.getElementById('btnQR').href = d.qr;
+        document.getElementById('btnPDF').href = d.pdf;
+        
+        console.log('✅ Registro exitoso:', d.hash);
+        
+      } catch (err) {
+        console.error('❌ Error completo:', err);
+        error.textContent = '❌ ' + err.message;
+        error.classList.remove('hidden');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '🚀 Generar QR con URL de GitHub';
+      }
+    });
+  </script>
 </body>
 </html>

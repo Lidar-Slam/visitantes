@@ -1,0 +1,98 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verificación - LiDAR SLAM</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+body { 
+  font-family: 'Segoe UI', sans-serif; 
+  background: #ffffff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+.card {
+  width: 400px;
+  height: 600px;
+  background: linear-gradient(180deg, #313133 0%, #0f0f0f 50%, #353636 100%);
+  border-radius: 16px;
+  padding: 30px;
+  position: relative;
+  box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+  color: white;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}    
+    .header, .photo-section, .info-section, .hash-section, .footer { position: relative; z-index: 1; }
+    .header { text-align: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.15); }
+    .header h1 { font-size: 20px; font-weight: 700; text-transform: uppercase; margin-bottom: 4px; }
+    .header .subtitle { font-size: 11px; opacity: 0.85; }
+    .photo-section { text-align: center; margin-bottom: 20px; }
+    .photo-container { width: 170px; height: 170px; margin: 0 auto; border: 4px solid rgba(255,255,255,0.9); border-radius: 50%; overflow: hidden; background: white; }
+    .photo { width: 100%; height: 100%; object-fit: cover; }
+    .participant-name { font-size: 20px; font-weight: 700; margin: 14px 0 4px; }
+    .participant-role { font-size: 12px; opacity: 0.9; }
+    .info-section { background: rgba(255,255,255,0.12); border-radius: 12px; padding: 18px; margin-bottom: 15px; }
+    .info-item { display: flex; align-items: flex-start; margin-bottom: 14px; text-align: left; }
+    .info-icon { width: 24px; margin-right: 12px; font-size: 15px; }
+    .info-label { font-size: 9px; text-transform: uppercase; opacity: 0.75; margin-bottom: 3px; }
+    .info-value { font-size: 13px; font-weight: 600; }
+    .hash-section { background: rgba(0,0,0,0.35); border-radius: 8px; padding: 12px 16px; margin-bottom: 15px; text-align: center; }
+    .hash-label { font-size: 8px; text-transform: uppercase; opacity: 0.7; margin-bottom: 5px; }
+    .hash-value { font-family: monospace; font-size: 11px; color: #22d3ee; }
+    .verify-badge { display: inline-block; background: rgba(34,197,94,0.25); color: #86efac; padding: 5px 14px; border-radius: 20px; font-size: 9px; font-weight: 700; margin-top: 8px; }
+    .footer { margin-top: auto; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1); text-align: center; font-size: 9px; opacity: 0.6; }
+    .bottom-line { position: absolute; bottom: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #fce187, #e6c616, #dfe794); }
+  </style>
+</head>
+<body>
+  <div id="card" class="card">
+    <div class="watermark"><img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛰️</text></svg>" alt=""></div>
+    <div class="content" id="content">
+      <div class="loading"><div class="spinner"></div><p>Verificando...</p></div>
+    </div>
+  </div>
+
+  <script>
+    const hash = new URLSearchParams(location.search).get('hash');
+    const content = document.getElementById('content');
+    
+    if (!hash) {
+      content.innerHTML = '<div class="error"><h2>⚠️ Sin código</h2><p>Escanea el QR de la credencial</p></div>';
+    } else {
+      fetch('participantes.json?t=' + Date.now())
+        .then(r => r.json())
+        .then(db => {
+          const p = db.find(x => x.hash === hash);
+          if (p) {
+            content.innerHTML = `
+              <div style="position:absolute;top:15px;right:15px;padding:5px 12px;border-radius:20px;font-size:10px;font-weight:700;background:rgba(34,197,94,.9);color:white;z-index:2">✓ VERIFICADO</div>
+              <div class="header"><h1>LiDAR SLAM 2026</h1><div class="subtitle">Credencial de Participante</div></div>
+              <div class="photo"><div class="photo-container"><img src="${p.foto}" alt="Foto" onerror="this.src='https://via.placeholder.com/170?text=Foto'"></div><div class="name">${p.nombre}</div><div class="role">Participante Registrado</div></div>
+              <div class="info">
+                <div class="info-item"><div class="info-icon">🆔</div><div><div class="info-label">DNI</div><div class="info-value">${p.dni}</div></div></div>
+                <div class="info-item"><div class="info-icon">📧</div><div><div class="info-label">Email</div><div class="info-value">${p.email}</div></div></div>
+                <div class="info-item"><div class="info-icon">📱</div><div><div class="info-label">Teléfono</div><div class="info-value">${p.telefono}</div></div></div>
+              </div>
+              <div class="hash"><div class="hash-label">ID Único</div><div class="hash-value">${p.hash}</div><div class="badge">✓ Verificado</div></div>
+              <div class="footer">
+                <a href="${p.pdf}" target="_blank" class="btn">👁️ Ver PDF</a>
+                <a href="${p.pdf}" download class="btn">💾 Descargar</a>
+              </div>
+            `;
+          } else {
+            content.innerHTML = '<div class="error"><h2>⚠️ No encontrado</h2><p>Este código no está registrado</p></div>';
+          }
+        })
+        .catch(() => {
+          content.innerHTML = '<div class="error"><h2>⚠️ Error</h2><p>No se pudo cargar la base de datos</p></div>';
+        });
+    }
+  </script>
+</body>
+</html>
